@@ -1,4 +1,3 @@
-# environment/rendering.py
 import pygame
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -6,10 +5,10 @@ import math
 
 # Colors
 COLORS = {
-    'agent': (0.0, 0.0, 1.0),
-    'waste': (0.55, 0.27, 0.07),
-    'bin': (0.2, 0.7, 0.2),
-    'ground': (0.9, 0.9, 0.9),
+    'agent': (0.6, 0.2, 0.8),  
+    'waste': (0.55, 0.27, 0.07),  # Brown
+    'bin': (0.2, 0.7, 0.2),  # Green
+    'ground': (0.9, 0.9, 0.9),  # Light grey
 }
 
 def draw_cube(x, y, z, size, color):
@@ -36,6 +35,35 @@ def draw_cube(x, y, z, size, color):
         for vertex in edge:
             glVertex3fv(vertices[vertex])
     glEnd()
+
+def draw_cone(x, y, z, base=0.25, height=0.5, slices=20, color=(0.6, 0.2, 0.8)):
+    """Draw a cone (agent head) pointing upward."""
+    glColor3f(*color)
+    glPushMatrix()
+    glTranslatef(x, y, z)
+    glRotatef(-90, 1, 0, 0)  # Rotate to point upward
+    quad = gluNewQuadric()
+    gluCylinder(quad, base, 0.0, height, slices, 1)
+    glPopMatrix()
+
+def draw_sphere(x, y, z, radius=0.25, color=(0.5, 0.5, 0.5)):
+    """Draw a solid sphere (waste)."""
+    glColor3f(*color)
+    glPushMatrix()
+    glTranslatef(x, y, z)
+    quad = gluNewQuadric()
+    gluSphere(quad, radius, 20, 20)
+    glPopMatrix()
+
+def draw_cylinder(x, y, z, radius=0.3, height=0.5, slices=20, color=(0.2, 0.7, 0.2)):
+    """Draw an open-top cylinder (bin)."""
+    glColor3f(*color)
+    glPushMatrix()
+    glTranslatef(x, y, z)
+    glRotatef(-90, 1, 0, 0)
+    quad = gluNewQuadric()
+    gluCylinder(quad, radius, radius, height, slices, 1)
+    glPopMatrix()
 
 def draw_ground(grid_size):
     # Draw base ground
@@ -82,18 +110,20 @@ def render_waste_env(env, screen):
 
     size = 0.5
 
-    # Draw agent
+    # Draw agent: Cube body + cone head
     ax, ay = env.agent_pos
-    draw_cube(ax + 0.5, size / 2, ay + 0.5, size, COLORS['agent'])
+    body_center = (ax + 0.5, size / 2, ay + 0.5)
+    draw_cube(*body_center, size, COLORS['agent'])  # Body
+    draw_cone(body_center[0], body_center[1] + size / 2, body_center[2], color=(1, 0, 0))  # Head
 
-    # Draw waste if not carrying
+    # Draw waste
     if not env.carrying_waste:
         wx, wy = env.waste_pos
-        draw_cube(wx + 0.5, size / 2, wy + 0.5, size, COLORS['waste'])
+        draw_sphere(wx + 0.5, size / 2, wy + 0.5, radius=0.25, color=COLORS['waste'])
 
     # Draw bin
     bx, by = env.bin_pos
-    draw_cube(bx + 0.5, size / 2, by + 0.5, size, COLORS['bin'])
+    draw_cylinder(bx + 0.5, size / 2, by + 0.5, radius=0.3, height=0.5, color=COLORS['bin'])
 
     pygame.display.flip()
     pygame.time.wait(100)
