@@ -38,6 +38,7 @@ def draw_cube(x, y, z, size, color):
     glEnd()
 
 def draw_ground(grid_size):
+    # Draw base ground color
     glColor3f(*COLORS['ground'])
     glBegin(GL_QUADS)
     glVertex3f(0, 0, 0)
@@ -45,6 +46,21 @@ def draw_ground(grid_size):
     glVertex3f(grid_size, 0, grid_size)
     glVertex3f(0, 0, grid_size)
     glEnd()
+
+    # Draw grid lines
+    glColor3f(0.7, 0.7, 0.7)  # Light gray lines
+    glLineWidth(1)
+    glBegin(GL_LINES)
+    for i in range(grid_size + 1):
+        # Vertical lines (z-axis)
+        glVertex3f(i, 0.001, 0)
+        glVertex3f(i, 0.001, grid_size)
+
+        # Horizontal lines (x-axis)
+        glVertex3f(0, 0.001, i)
+        glVertex3f(grid_size, 0.001, i)
+    glEnd()
+
 
 def setup_camera(grid_size):
     glMatrixMode(GL_PROJECTION)
